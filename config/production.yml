@@ -1,2 +1,4 @@
+server:
+  fontendurl: http://example.com
 db:
   synchronize: false

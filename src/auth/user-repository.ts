@@ -1,7 +1,7 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { AuthCredentialsDto } from './dto/auth-credentials';
 import { User } from './user.entity';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import {
   ConflictException,
   InternalServerErrorException,
@@ -14,7 +14,7 @@ export class UserRepository extends Repository<User> {
     const user = new User();
     user.username = username;
     user.salt = await bcrypt.genSalt();
-    user.password = await this.hashPassword(password, user.salt);
+    user.password = await UserRepository.hashPassword(password, user.salt);
     try {
       await user.save();
     } catch (e) {
@@ -26,7 +26,10 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  private async hashPassword(password: string, salt: string): Promise<string> {
+  private static async hashPassword(
+    password: string,
+    salt: string,
+  ): Promise<string> {
     return bcrypt.hash(password, salt);
   }
 
@@ -35,7 +38,7 @@ export class UserRepository extends Repository<User> {
     const user = await User.findOne({ username: username });
     if (
       user &&
-      (await this.hashPassword(password, user.salt)) == user.password
+      (await UserRepository.hashPassword(password, user.salt)) == user.password
     ) {
       return user.username;
     } else {
