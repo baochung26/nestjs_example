@@ -10,6 +10,8 @@ export class AuthController {
   signUp(
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
   ): Promise<void> {
+    console.log('process.env.DATABASE_HOST');
+    console.log(process.env.DB_HOST);
     return this.authService.signUp(authCredentialsDto);
   }
 
