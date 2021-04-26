@@ -53,11 +53,13 @@ export class TasksController {
 
   @Post()
   @UsePipes(ValidationPipe) // or @Body(ValidationPipe) bellow
-  createTask(
+  async createTask(
     @Body() createTaskDto: CreateTaskDto,
     @GetUser() user: User,
   ): Promise<Task> {
-    return this.tasksService.createTask(createTaskDto, user);
+    const task = this.tasksService.createTask(createTaskDto, user);
+    await this.tasksService.sendEmail('noi dung queue');
+    return task;
   }
 
   @Delete('/:id')

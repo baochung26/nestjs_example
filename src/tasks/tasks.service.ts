@@ -7,12 +7,17 @@ import { TaskStatus } from './task-status-enum';
 import { GetTasksFilterDto } from './dto/get-tasks-filter-dto';
 import { User } from '../auth/user.entity';
 import { GetUser } from '../auth/get-user-decorator';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class TasksService {
   constructor(
     @InjectRepository(TaskRepository)
     private taskRepository: TaskRepository,
+
+    @InjectQueue('send-email')
+    private queue: Queue,
   ) {}
 
   async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
@@ -50,5 +55,17 @@ export class TasksService {
     task.status = status;
     await task.save();
     return task;
+  }
+
+  async sendEmail(email: string): Promise<void> {
+    await this.queue.add(
+      'send-email-job',
+      {
+        email: email,
+      },
+      {
+        delay: 5000,
+      },
+    );
   }
 }
