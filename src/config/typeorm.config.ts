@@ -1,25 +1,29 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-// import * as config from 'config';
-//
-// const dbConfig = config.get('db');
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import {
+  TypeOrmModuleAsyncOptions,
+  TypeOrmModuleOptions,
+} from '@nestjs/typeorm';
 
-export const typeOrmConfig: TypeOrmModuleOptions = {
-  // type: dbConfig.type,
-  // host: process.env.RDS_HOSTNAME || dbConfig.host,
-  // port: process.env.RDS_PORT || dbConfig.port,
-  // username: process.env.RDS_USERNAME || dbConfig.username,
-  // password: process.env.RDS_PASSWORD || dbConfig.password,
-  // database: process.env.RDS_DB_NAME || dbConfig.database,
-  // entities: [__dirname + '/../**/*.entity.{js,ts}'],
-  // synchronize: true,
-  // autoLoadEntities: true,
-  type: 'postgres',
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT, 10),
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-  entities: [__dirname + '/../**/*.entity.{js,ts}'],
-  synchronize: true,
-  autoLoadEntities: true,
+export default class TypeOrmConfig {
+  static getOrmConfig(configService: ConfigService): TypeOrmModuleOptions {
+    return {
+      type: 'postgres',
+      host: configService.get('DB_HOST'),
+      port: configService.get('DB_PORT'),
+      username: configService.get('DB_USERNAME'),
+      password: configService.get('DB_PASSWORD'),
+      database: configService.get('DB_NAME'),
+      entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+      synchronize: true,
+      logging: true,
+    };
+  }
+}
+
+export const typeOrmConfigAsync: TypeOrmModuleAsyncOptions = {
+  imports: [ConfigModule],
+  useFactory: async (
+    configService: ConfigService,
+  ): Promise<TypeOrmModuleOptions> => TypeOrmConfig.getOrmConfig(configService),
+  inject: [ConfigService],
 };
